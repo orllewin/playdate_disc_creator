@@ -29,6 +29,8 @@ var mode = MODE_IMG
 //'identify -list threshold' displays what built-in ordered dither options ImageMajick has
 var ditherType = "h4x4a"
 var labelCoords = "NorthWest"
+var repoUrlOverride = ""
+var keepProject = false
 
 process.argv.forEach(function (val, index, array) {
     log("CLI argument: " + index + ': ' + val);
@@ -46,6 +48,14 @@ process.argv.forEach(function (val, index, array) {
     if(val == "-labelCoords"){
         labelCoords = process.argv[index + 1]
     }
+
+    if(val == "-useFork"){
+        repoUrlOverride = process.argv[index + 1]
+    }
+
+    if(val == "-keepProject"){
+        keepProject = true
+    }
 });
 
 let cwd = process.cwd()
@@ -56,7 +66,11 @@ execSync("rm -f -r ./playdate_disc")
 execSync("rm -f -r card.png")
 
 log("Cloning Playdate Disc project...")
-execSync("git clone https://github.com/orllewin/playdate_disc.git")
+if(repoUrlOverride != ""){
+    execSync("git clone " + repoUrlOverride)
+}else{
+    execSync("git clone https://github.com/orllewin/playdate_disc.git")
+}
 
 log("Deleting Playdate Disc project example wavs...")
 execSync("find ./playdate_disc/Source/Audio -name \"*.wav\" -type f -delete")
@@ -195,7 +209,8 @@ fs.readdir(cwd, (error, files) => {
 
     //tidy up:
     execSync("find ./ -name \"*metadata.txt\" -type f -delete")
-    execSync("rm -f -r ./playdate_disc")
+
+    if(!keepProject) execSync("rm -f -r ./playdate_disc")
 })
 
 function log(message){
